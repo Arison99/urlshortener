@@ -43,8 +43,24 @@ def _record_event(db: Session, event_type: str, short_code: str | None = None, q
     db.commit()
 
 
+def _to_utc_naive(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(UTC).replace(tzinfo=None)
+
+
+def _utc_now_naive() -> datetime:
+    return datetime.utcnow()
+
+
+def _utc_now_iso() -> str:
+    return f"{_utc_now_naive().replace(microsecond=0).isoformat()}Z"
+
+
 def _build_daily_series(db: Session, days: int = 9):
-    now = datetime.now(UTC)
+    now = _utc_now_naive()
     start_day = (now - timedelta(days=days - 1)).replace(hour=0, minute=0, second=0, microsecond=0)
 
     rows = (
@@ -55,7 +71,7 @@ def _build_daily_series(db: Session, days: int = 9):
 
     counts = {}
     for row in rows:
-        created_at = row[0]
+        created_at = _to_utc_naive(row[0])
         if created_at is None:
             continue
         day_key = created_at.date().isoformat()
@@ -70,6 +86,7 @@ def _build_daily_series(db: Session, days: int = 9):
     click_counts = {}
     search_counts = {}
     for event_type, created_at in event_rows:
+        created_at = _to_utc_naive(created_at)
         if created_at is None:
             continue
         day_key = created_at.date().isoformat()
@@ -160,7 +177,7 @@ async def public_metrics(db: Session = Depends(get_db)):
     total_clicks = db.query(func.count(UrlEvent.id)).filter(UrlEvent.event_type == "redirect_click").scalar() or 0
     total_searches = db.query(func.count(UrlEvent.id)).filter(UrlEvent.event_type == "url_search").scalar() or 0
 
-    now = datetime.now(UTC)
+    now = _utc_now_naive()
     links_last_24h = (
         db.query(func.count(UrlMapping.id))
         .filter(UrlMapping.created_at >= now - timedelta(hours=24))
@@ -180,7 +197,7 @@ async def public_metrics(db: Session = Depends(get_db)):
     threat_blocks = int(max(monthly_estimate, clicks_last_24h) * 0.018)
 
     return {
-        "generated_at": now.isoformat(),
+        "generated_at": _utc_now_iso(),
         "kpis": [
             {
                 "label": "Redirect Availability",
@@ -244,7 +261,7 @@ async def public_analytics(db: Session = Depends(get_db)):
     series = _build_daily_series(db, days=9)
 
     return {
-        "generated_at": datetime.now(UTC).isoformat(),
+        "generated_at": _utc_now_iso(),
         "series": series,
         "telemetry": {
             "source": "linkops-public-telemetry",
@@ -256,7 +273,7 @@ async def public_analytics(db: Session = Depends(get_db)):
 
 @router.get("/api/public/url-dashboard")
 async def public_url_dashboard(db: Session = Depends(get_db)):
-    now = datetime.now(UTC)
+    now = _utc_now_naive()
 
     all_rows = (
         db.query(UrlMapping.short_code, UrlMapping.original_url, UrlMapping.created_at)
@@ -270,7 +287,7 @@ async def public_url_dashboard(db: Session = Depends(get_db)):
     domain_counts = {}
 
     for short_code, original_url, created_at in all_rows:
-        created = created_at or now
+        created = _to_utc_naive(created_at) or now
         if created >= now - timedelta(hours=24):
             links_last_24h += 1
         if created >= now - timedelta(days=7):
@@ -292,7 +309,7 @@ async def public_url_dashboard(db: Session = Depends(get_db)):
     clicks_by_code = {}
 
     for event_type, short_code, created_at in event_rows:
-        created = created_at or now
+        created = _to_utc_naive(created_at) or now
         if event_type == "redirect_click":
             total_clicks += 1
             if created >= now - timedelta(hours=24):
@@ -309,11 +326,12 @@ async def public_url_dashboard(db: Session = Depends(get_db)):
 
     recent_links = []
     for short_code, original_url, created_at in all_rows[:8]:
+        created = _to_utc_naive(created_at) or now
         recent_links.append(
             {
                 "short_code": short_code,
                 "original_url": original_url,
-                "created_at": (created_at or now).isoformat(),
+                "created_at": created.isoformat(),
                 "clicks": clicks_by_code.get(short_code, 0),
             }
         )
@@ -321,7 +339,7 @@ async def public_url_dashboard(db: Session = Depends(get_db)):
     series = _build_daily_series(db, days=14)
 
     return {
-        "generated_at": now.isoformat(),
+        "generated_at": _utc_now_iso(),
         "free_tier": True,
         "kpis": {
             "total_links": total_links,
