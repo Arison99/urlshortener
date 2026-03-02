@@ -6,14 +6,14 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 3000,
-    allowedHosts: ["app.samwifi.site"],
+    allowedHosts: ["app.samwifi.site", "api.samwifi.site"],
     proxy: {
       "/api": {
-        target: "http://backend:8000",
+        target: "http://127.0.0.1:8000",
         changeOrigin: true
       },
       "^/[A-Za-z0-9]{6,}$": {
-        target: "http://backend:8000",
+        target: "http://127.0.0.1:8000",
         changeOrigin: true
       }
     }
