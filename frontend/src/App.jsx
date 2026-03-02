@@ -31,7 +31,7 @@ export default function App() {
       return;
     }
 
-    const fontSize = 14;
+    const fontSize = 22;
     const glyphs = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ$#@*";
     let columns = 0;
     let drops = [];
@@ -48,7 +48,7 @@ export default function App() {
     const drawFrame = () => {
       context.fillStyle = "rgba(2, 6, 23, 0.08)";
       context.fillRect(0, 0, canvas.width, canvas.height);
-      context.fillStyle = "rgba(16, 185, 129, 0.28)";
+      context.fillStyle = "rgba(16, 185, 129, 0.4)";
       context.font = `${fontSize}px monospace`;
 
       for (let index = 0; index < drops.length; index += 1) {
@@ -157,10 +157,10 @@ export default function App() {
       <canvas ref={matrixCanvasRef} className="matrix-bg" aria-hidden="true" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/75 to-slate-950" />
 
-      <div className="relative mx-auto w-full max-w-6xl px-4 py-8 md:py-12">
+      <div className="relative mx-auto w-full max-w-6xl space-y-6 px-4 py-8 md:py-12">
         <Navigation activePage={activePage} onChange={setActivePage} />
 
-        <div className="mb-6 flex justify-end">
+        <div className="flex justify-end">
           <button
             className="rounded-lg border border-emerald-300/50 bg-emerald-500/15 px-4 py-2 text-sm font-medium text-emerald-100 transition hover:bg-emerald-500/25"
             onClick={() => setDashboardOpen((current) => !current)}
@@ -171,7 +171,7 @@ export default function App() {
 
         {toast.show && (
           <div
-            className={`mb-6 rounded-lg border px-4 py-2 text-sm shadow-sm backdrop-blur ${
+            className={`rounded-lg border px-4 py-2 text-sm shadow-sm backdrop-blur ${
               toast.type === "error"
                 ? "border-red-400/40 bg-red-500/20 text-red-100"
                 : "border-emerald-400/40 bg-emerald-500/20 text-emerald-100"
@@ -183,26 +183,30 @@ export default function App() {
           </div>
         )}
 
-        {dashboardOpen ? <UserDashboardPage /> : renderPage()}
+        <div className="mx-auto w-full max-w-5xl">
+          {dashboardOpen ? <UserDashboardPage /> : renderPage()}
+        </div>
 
         {!dashboardOpen && (
-          <div className="mt-10">
-            <ShortenerCard
-              url={url}
-              shortUrl={shortUrl}
-              error={error}
-              loading={loading}
-              copied={copied}
-              setUrl={setUrl}
-              onKeyDown={onKeyDown}
-              onSubmit={handleSubmit}
-              onCopy={handleCopy}
-            />
+          <div className="flex justify-center">
+            <div className="w-full max-w-3xl">
+              <ShortenerCard
+                url={url}
+                shortUrl={shortUrl}
+                error={error}
+                loading={loading}
+                copied={copied}
+                setUrl={setUrl}
+                onKeyDown={onKeyDown}
+                onSubmit={handleSubmit}
+                onCopy={handleCopy}
+              />
+            </div>
           </div>
         )}
 
-        <footer className="mt-8 text-center text-xs text-slate-400">
-          © {new Date().getFullYear()} LinkOps URL Services · Secure short links for teams and enterprises.
+        <footer className="pt-2 text-center text-xs text-slate-400">
+          © {new Date().getFullYear()} Samwifi Networks. LinkOps URL Services · Secure short links for teams and enterprises.
         </footer>
       </div>
     </div>
