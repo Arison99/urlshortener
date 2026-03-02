@@ -1,50 +1,138 @@
 # Hybrid URL Shortener
 
-Bare-metal starter kit for a hybrid URL shortener with:
+Professional URL shortener platform (bare-metal) with:
 
-- EC2 gateway (`nginx` + WireGuard)
-- Local node workloads (FastAPI backend, React frontend, SQLite)
-- secure ingress via WireGuard + nginx gateway routing
+- FastAPI backend + SQLite persistence
+- React/Vite frontend with enterprise pages + free user analytics dashboard
+- Public metrics/analytics APIs for KPI dashboards
+- Optional secure access path through WireGuard + nginx gateway
 
-## Project Structure
+## Tech Stack
+
+- Backend: FastAPI, SQLAlchemy, SQLite
+- Frontend: React 18, Vite 5, TailwindCSS
+- Networking: nginx configs (in `ec2-gateway/`)
+
+## Repository Structure
 
 - `ec2-gateway/`
-  - `nginx/nginx.conf`
-  - `wireguard/wg0.conf`
+   - `nginx/nginx.conf`
 - `local-node/`
-  - `backend/` (FastAPI + SQLAlchemy)
-  - `frontend/` (React + Tailwind + Vite)
-  - `data/` (SQLite DB storage)
+   - `backend/` (FastAPI API + data models)
+   - `frontend/` (website + dashboard UI)
 
-## Bare Metal Quick Start
+## Local Development (Bare Metal)
 
-1. Start backend:
-   - `cd ../backend`
-   - `python -m venv .venv`
-   - `.\.venv\Scripts\Activate.ps1`
-   - `pip install -r requirements.txt`
-   - `$env:DATABASE_URL="sqlite:///./urlshortener.db"`
-   - `uvicorn app.main:app --host 0.0.0.0 --port 8000`
-2. Start frontend (new terminal):
-   - `cd local-node/frontend`
-   - `npm install`
-   - `npm run dev -- --host 0.0.0.0 --port 3000`
-3. SQLite database file:
-   - auto-created at `local-node/backend/urlshortener.db`
-4. Open app:
-   - `http://localhost:3000`
-5. API health:
-   - `http://localhost:8000/healthz`
+### 1) Start Backend (FastAPI)
 
-## WireGuard Notes
+From the repository root:
 
-Populate placeholders in:
+```powershell
+cd local-node/backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:DATABASE_URL="sqlite:///./urlshortener.db"
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-- `ec2-gateway/wireguard/wg0.conf`
-- `local-node/wireguard/wg0.conf`
+Backend health check:
 
-Then bring interfaces up on both ends with your host-specific WireGuard workflow.
+- `http://localhost:8000/healthz`
+
+### 2) Start Frontend (Vite)
+
+Open a new terminal:
+
+```powershell
+cd local-node/frontend
+npm install
+npm run dev -- --host 0.0.0.0 --port 3000
+```
+
+Frontend URL:
+
+- `http://localhost:3000`
+
+### 3) Build Frontend (Production Check)
+
+```powershell
+cd local-node/frontend
+npm run build
+```
+
+## Environment Variables
+
+### Backend
+
+- `DATABASE_URL` (optional)
+   - Default in code: `sqlite:///./urlshortener.db`
+   - Example override: `sqlite:///./urlshortener.db`
+
+### Frontend (Vite)
+
+- `vite.config.js` currently allows `app.samwifi.site` in `server.allowedHosts`
+- API traffic proxies to backend at `http://backend:8000` for `/api/*` during dev
+
+If you run backend locally (not in a host named `backend`), set the proxy target in `local-node/frontend/vite.config.js` to `http://127.0.0.1:8000`.
+
+## API Reference
+
+### Core URL APIs
+
+- `POST /api/shorten`
+   - Body: `{ "url": "https://example.com" }`
+   - Response: `{ "short_code": "abc123", "url": "https://example.com" }`
+
+- `GET /{code}`
+   - Redirects to the original URL
+   - Also records click analytics
+
+- `GET /api/search?query=...`
+   - Returns URL records matching `short_code` or original URL
+   - Records search analytics event
+
+### Public Metrics APIs
+
+- `GET /api/public/metrics`
+   - KPI cards + security metadata + summary counters
+
+- `GET /api/public/analytics`
+   - Time-series telemetry (`new_links`, `redirect_events`, `search_events`)
+
+- `GET /api/public/url-dashboard`
+   - Free user dashboard payload:
+      - KPI totals (links, clicks, searches)
+      - top domains
+      - recent links (with click counts)
+      - trend series
+
+## Troubleshooting
+
+### `python app.py` fails
+
+This project does not use an `app.py` entrypoint. Start backend with:
+
+```powershell
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### `flask run` fails
+
+Backend is FastAPI, not Flask. Use `uvicorn` command above.
+
+### Vite host blocked error
+
+If you see “host is not allowed”, add your domain to `server.allowedHosts` in:
+
+- `local-node/frontend/vite.config.js`
+
+### Short links not redirecting in dev
+
+Ensure Vite proxy includes short-code route forwarding and backend is reachable.
 
 ## Security Notes
 
-- Run backend/frontend only on interfaces you trust and route through WireGuard where possible.
+- Expose services only on trusted interfaces.
+- For remote access, route through WireGuard and optionally front with nginx.
+- Keep WireGuard keys private and rotate them regularly.
