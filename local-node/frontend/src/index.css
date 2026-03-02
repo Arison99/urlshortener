@@ -1,0 +1,276 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.matrix-bg {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0.4;
+	z-index: 0;
+}
+
+.float-2d {
+	animation: float2d 4.2s ease-in-out infinite;
+}
+
+@keyframes float2d {
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-6px);
+	}
+}
+
+.scene-3d {
+	position: relative;
+	width: 170px;
+	height: 170px;
+	perspective: 800px;
+}
+
+.scene-3d-lg {
+	width: 220px;
+	height: 220px;
+}
+
+.cube-3d {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	transform-style: preserve-3d;
+	animation: rotateCube 11s linear infinite;
+}
+
+.cube-face {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 220px;
+	height: 220px;
+	border: 1px solid rgba(56, 189, 248, 0.35);
+	background: rgba(14, 116, 144, 0.18);
+	color: #e2e8f0;
+	font-size: 14px;
+	letter-spacing: 0.08em;
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+}
+
+.cube-front {
+	transform: translateZ(110px);
+}
+
+.cube-back {
+	transform: rotateY(180deg) translateZ(110px);
+}
+
+.cube-right {
+	transform: rotateY(90deg) translateZ(110px);
+}
+
+.cube-left {
+	transform: rotateY(-90deg) translateZ(110px);
+}
+
+.cube-top {
+	transform: rotateX(90deg) translateZ(110px);
+}
+
+.cube-bottom {
+	transform: rotateX(-90deg) translateZ(110px);
+}
+
+.orbit-ring {
+	position: absolute;
+	inset: 0;
+	border-radius: 9999px;
+	border: 1px solid rgba(56, 189, 248, 0.25);
+	pointer-events: none;
+}
+
+.orbit-ring-a {
+	transform: rotateX(65deg) rotateY(20deg);
+	animation: orbitA 8s linear infinite;
+}
+
+.orbit-ring-b {
+	transform: rotateX(20deg) rotateY(70deg);
+	animation: orbitB 10s linear infinite reverse;
+}
+
+.orbit-ring-c {
+	transform: rotateX(85deg) rotateY(45deg) scale(0.78);
+	animation: orbitC 6s linear infinite;
+}
+
+@keyframes orbitA {
+	to {
+		transform: rotateX(65deg) rotateY(380deg);
+	}
+}
+
+@keyframes orbitB {
+	to {
+		transform: rotateX(20deg) rotateY(430deg);
+	}
+}
+
+@keyframes orbitC {
+	to {
+		transform: rotateX(85deg) rotateY(405deg) scale(0.78);
+	}
+}
+
+@keyframes rotateCube {
+	0% {
+		transform: rotateX(-20deg) rotateY(0deg);
+	}
+	100% {
+		transform: rotateX(-20deg) rotateY(360deg);
+	}
+}
+
+.vector-line,
+.vector-line-alt {
+	fill: none;
+	stroke-width: 2;
+	stroke: url(#lineGradient);
+	stroke-linecap: round;
+	stroke-dasharray: 8 6;
+}
+
+.vector-line {
+	animation: dashMove 2s linear infinite;
+}
+
+.vector-line-alt {
+	animation: dashMoveReverse 3s linear infinite;
+}
+
+.vector-dot {
+	fill: #38bdf8;
+}
+
+.vector-dot-alt {
+	fill: #34d399;
+}
+
+.vector-dot-3 {
+	fill: #f59e0b;
+}
+
+@keyframes dashMove {
+	to {
+		stroke-dashoffset: -28;
+	}
+}
+
+@keyframes dashMoveReverse {
+	to {
+		stroke-dashoffset: 28;
+	}
+}
+
+.graph-bar {
+	height: 6px;
+	width: 100%;
+	border-radius: 9999px;
+	background: rgba(51, 65, 85, 0.9);
+	overflow: hidden;
+	position: relative;
+}
+
+.graph-bar::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	width: 62%;
+	background: linear-gradient(90deg, #22d3ee 0%, #34d399 100%);
+	animation: barPulse 2.8s ease-in-out infinite;
+	border-radius: 9999px;
+}
+
+@keyframes barPulse {
+	0%,
+	100% {
+		width: 40%;
+	}
+	50% {
+		width: 88%;
+	}
+}
+
+.metric-graph-line,
+.metric-graph-line-alt {
+	fill: none;
+	stroke-width: 3;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-dasharray: 9 7;
+}
+
+.metric-graph-line {
+	stroke: url(#metricLine);
+	animation: metricDash 2.4s linear infinite;
+}
+
+.metric-graph-line-alt {
+	stroke: #a78bfa;
+	stroke-opacity: 0.75;
+	animation: metricDashReverse 3.2s linear infinite;
+}
+
+@keyframes metricDash {
+	to {
+		stroke-dashoffset: -32;
+	}
+}
+
+@keyframes metricDashReverse {
+	to {
+		stroke-dashoffset: 32;
+	}
+}
+
+.metric-graph-node {
+	fill: #22d3ee;
+}
+
+.metric-graph-node-alt {
+	fill: #a78bfa;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.float-2d,
+	.cube-3d,
+	.vector-line,
+	.vector-line-alt,
+	.orbit-ring-a,
+	.orbit-ring-b,
+	.orbit-ring-c,
+	.metric-graph-line,
+	.metric-graph-line-alt,
+	.graph-bar::after {
+		animation: none;
+	}
+}
+
+.page-fade {
+	animation: pageFade 360ms ease;
+}
+
+@keyframes pageFade {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}

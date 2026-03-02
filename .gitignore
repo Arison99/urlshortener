@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+build/
+
+# Runtime
+*.log
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VPN material
+local-node/wireguard/keys/
+ec2-gateway/wireguard/keys/
+
+# SQLite data
+*.db
+*.db-shm
+*.db-wal
+local-node/data/
