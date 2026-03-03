@@ -9,8 +9,8 @@ export default function ContactPage() {
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-5 backdrop-blur-sm">
           <h3 className="text-lg font-semibold text-emerald-200">Get in touch</h3>
-          <p className="mt-2 text-sm text-slate-300">Email: enterprise@linkops.example</p>
-          <p className="mt-1 text-sm text-slate-300">Sales: +1 (555) 240-9911</p>
+          <p className="mt-2 text-sm text-slate-300">Email: enterprise@linkops.samwifi.site</p>
+          <p className="mt-1 text-sm text-slate-300">Sales: +256 (076) 770-8272</p>
           <p className="mt-1 text-sm text-slate-300">Support SLA: 24/7 global support</p>
         </div>
 
